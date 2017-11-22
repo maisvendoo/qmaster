@@ -12,28 +12,28 @@
 
 /*!
  * \struct
- * \brief Настройки последовательного порта
+ * \brief Serial port settings
  */
 //------------------------------------------------------------------------------
 //
 //------------------------------------------------------------------------------
 struct serial_config_t
 {
-    /// Имя порта
+    /// Port name
     QString     portName;
-    /// Скорость
+    /// Baudrate
     int         baudrate;
-    /// Биты данных
+    /// Data bits count
     int         dataBits;
-    /// Стоп-биты
+    /// Stop bits count
     int         stopBits;
-    /// Биты четности
+    /// Parity bit
     int         parity;
-    /// Управление потоком
+    /// Flow control
     int         flowControl;
-    /// Таймаут между попытками запросов
+    /// Request timeout
     int         timeout;
-    /// Число повторений попыток
+    /// Requiest retries number
     int         retries;
 
     serial_config_t()

@@ -5,6 +5,14 @@
 //
 //
 //------------------------------------------------------------------------------
+/*!
+ * \file
+ * \brief PC Modbus master emulator
+ * \copyright maisvendoo
+ * \author maisvendoo
+ * \date 22/11/2017
+ */
+
 #ifndef MASTER_H
 #define MASTER_H
 
@@ -14,6 +22,10 @@
 
 #include    "serial-config.h"
 
+/*!
+ * \enum
+ * \brief Modbus functions codes
+ */
 //------------------------------------------------------------------------------
 //
 //------------------------------------------------------------------------------
@@ -30,6 +42,10 @@ enum
     MB_FUNC_WRITE_MULTIPLE_REGISTERS = 0x10
 };
 
+/*!
+ * \class
+ * \brief Virtual master device
+ */
 //------------------------------------------------------------------------------
 //
 //------------------------------------------------------------------------------
@@ -43,31 +59,40 @@ public:
 
     virtual ~Master();
 
+    /// Master initialization
     bool init(const serial_config_t &serial_config);
 
+    /// Check connection state
     bool isConnected() const;
 
 signals:
 
+    /// Print master status
     void statusPrint(QString msg);
 
 protected:
 
+    /// Modbus device object
     QModbusClient   *modbusDevice;
 
-    bool is_connected;    
+    /// Connection flag
+    bool is_connected;
 
 public slots:
 
+    /// Open connection throw serial port
     void openConnection();
 
+    /// Close connection
     void closeConnection();
 
 private slots:
 
+    /// Error processing
     void errorModbus(QModbusDevice::Error error);
 
-    void stateChanged(QModbusDevice::State state);
+    /// State processing
+    void stateChanged(QModbusDevice::State state);   
 };
 
 #endif // MASTER_H

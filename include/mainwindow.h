@@ -9,6 +9,7 @@
 #define MAINWINDOW_H
 
 #include    <QMainWindow>
+#include    <QTableWidget>
 
 #include    "master.h"
 
@@ -34,11 +35,17 @@ public:
 
 private:
 
-    /// Начальная инициализация
+    /// Initialization
     void init();
 
-    /// Получение настроек порта
+    /// Get port settings from UI
     serial_config_t getSerialConfig();
+
+    /// Add table row
+    void addTableRow(QTableWidget *table);
+
+    /// Delete table row
+    void delTableRow(QTableWidget *table);
 
     Ui::MainWindow *ui;
     Master  *master;
@@ -50,6 +57,8 @@ private slots:
     void onConnectRelease();
 
     void statusPrint(QString msg);
+
+    void changeDataTableRowsCount(int i);
 };
 
 #endif // MAINWINDOW_H

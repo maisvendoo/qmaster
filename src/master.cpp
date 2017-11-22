@@ -1,3 +1,17 @@
+//------------------------------------------------------------------------------
+//
+//
+//
+//
+//
+//------------------------------------------------------------------------------
+/*!
+ * \file
+ * \brief PC Modbus master emulator
+ * \copyright maisvendoo
+ * \author maisvendoo
+ * \date 22/11/2017
+ */
 
 #include    "master.h"
 
@@ -14,8 +28,11 @@ Master::Master(QObject *parent) : QObject(parent)
 
     modbusDevice = new QModbusRtuSerialMaster(this);
 
-    connect(modbusDevice, &QModbusClient::stateChanged, this, &Master::stateChanged);
-    connect(modbusDevice, &QModbusClient::errorOccurred, this, &Master::errorModbus);
+    connect(modbusDevice, &QModbusClient::stateChanged,
+            this, &Master::stateChanged);
+
+    connect(modbusDevice, &QModbusClient::errorOccurred,
+            this, &Master::errorModbus);
 }
 
 //------------------------------------------------------------------------------
@@ -158,3 +175,4 @@ void Master::stateChanged(QModbusDevice::State state)
         break;
     }
 }
+

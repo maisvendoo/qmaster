@@ -10,6 +10,9 @@
 
 #include    <QtSerialPort/QSerialPortInfo>
 #include    <QString>
+#include    <QHeaderView>
+#include    <QSpinBox>
+#include    <QTableView>
 
 //------------------------------------------------------------------------------
 //
@@ -20,13 +23,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    init();
-
-    master = new Master();
-
-    connect(ui->bConnect, SIGNAL(released()), this, SLOT(onConnectRelease()));
-
-    connect(master, SIGNAL(statusPrint(QString)), this, SLOT(statusPrint(QString)));
+    init();   
 }
 
 //------------------------------------------------------------------------------
@@ -42,7 +39,16 @@ MainWindow::~MainWindow()
 //------------------------------------------------------------------------------
 void MainWindow::init()
 {
-    /// Получаем список доступных последовательных портов
+    // Tune output data table
+    QTableWidget *table = ui->tableData;
+    table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    addTableRow(table);
+    table->horizontalHeader()->setVisible(true);
+
+    connect(ui->sbCount, SIGNAL(valueChanged(int)),
+            this, SLOT(changeDataTableRowsCount(int)));
+
+    // Get available serial ports
     QList<QSerialPortInfo> info = QSerialPortInfo::availablePorts();
 
     for (int i = 0; i < info.count(); i++)
@@ -50,7 +56,7 @@ void MainWindow::init()
         ui->cbPort->addItem(info.at(i).portName());
     }
 
-    /// Формируем список функций
+    // Modbus functuions list to UI
     mb_func.insert("Read Coils (0x01)", MB_FUNC_READ_COILS);
     mb_func.insert("Read Discrete Inputs (0x02)", MB_FUNC_READ_DISCRETE_INPUT);
     mb_func.insert("Read Holding Registers (0x03)", MB_FUNC_READ_HOLDING_REGISTERS);
@@ -66,6 +72,15 @@ void MainWindow::init()
     {
         ui->cbFunc->addItem(it.key());
     }
+
+    // Modbus master initialization
+    master = new Master();
+
+    connect(ui->bConnect, SIGNAL(released()),
+            this, SLOT(onConnectRelease()));
+
+    connect(master, SIGNAL(statusPrint(QString)),
+            this, SLOT(statusPrint(QString)));
 }
 
 //------------------------------------------------------------------------------
@@ -86,6 +101,26 @@ serial_config_t MainWindow::getSerialConfig()
 //------------------------------------------------------------------------------
 //
 //------------------------------------------------------------------------------
+void MainWindow::addTableRow(QTableWidget *table)
+{
+    int idx = table->rowCount();
+    table->insertRow(table->rowCount());
+
+    int addr = ui->sbAddress->value() + ui->sbCount->value() - 1;
+    table->setItem(idx, 1, new QTableWidgetItem(QString::number(addr)));
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void MainWindow::delTableRow(QTableWidget *table)
+{
+    table->removeRow(table->rowCount() - 1);
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
 void MainWindow::onConnectRelease()
 {
     if (master->isConnected())
@@ -95,13 +130,17 @@ void MainWindow::onConnectRelease()
     }
     else
     {
-        /// Получаем настройки порта с формы
+        // Get port settings from form controls
         serial_config_t serial_config = getSerialConfig();
 
-        /// Инициализируем мастер
-        master->init(serial_config);
+        // Master init
+        if (!master->init(serial_config))
+        {
+            statusPrint("ERROR: Master device initialization failed");
+            return;
+        }
 
-        /// Выполняем соединение
+        // Try connection
         master->openConnection();
 
         ui->bConnect->setText("Disconnect");
@@ -115,4 +154,16 @@ void MainWindow::statusPrint(QString msg)
 {
     ui->statusBar->clearMessage();
     ui->statusBar->showMessage(msg);
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void MainWindow::changeDataTableRowsCount(int i)
+{
+    if (i > ui->tableData->rowCount())
+        addTableRow(ui->tableData);
+
+    if (i < ui->tableData->rowCount())
+        delTableRow(ui->tableData);
 }
