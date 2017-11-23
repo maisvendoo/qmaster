@@ -138,7 +138,7 @@
    <widget class="QComboBox" name="cbStopBits">
     <property name="geometry">
      <rect>
-      <x>450</x>
+      <x>440</x>
       <y>50</y>
       <width>71</width>
       <height>25</height>
@@ -158,7 +158,7 @@
    <widget class="QComboBox" name="cbParity">
     <property name="geometry">
      <rect>
-      <x>540</x>
+      <x>530</x>
       <y>50</y>
       <width>71</width>
       <height>25</height>
@@ -222,7 +222,7 @@
    <widget class="QLabel" name="label_4">
     <property name="geometry">
      <rect>
-      <x>460</x>
+      <x>450</x>
       <y>30</y>
       <width>71</width>
       <height>17</height>
@@ -235,7 +235,7 @@
    <widget class="QLabel" name="label_5">
     <property name="geometry">
      <rect>
-      <x>550</x>
+      <x>540</x>
       <y>30</y>
       <width>41</width>
       <height>17</height>
@@ -248,7 +248,7 @@
    <widget class="QPushButton" name="bConnect">
     <property name="geometry">
      <rect>
-      <x>510</x>
+      <x>500</x>
       <y>100</y>
       <width>101</width>
       <height>25</height>
@@ -374,7 +374,7 @@
    <widget class="QPushButton" name="bSend">
     <property name="geometry">
      <rect>
-      <x>510</x>
+      <x>500</x>
       <y>200</y>
       <width>101</width>
       <height>25</height>
@@ -441,6 +441,42 @@
       <string>Value</string>
      </property>
     </column>
+   </widget>
+   <widget class="QPlainTextEdit" name="ptRawData">
+    <property name="geometry">
+     <rect>
+      <x>610</x>
+      <y>50</y>
+      <width>421</width>
+      <height>551</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_6">
+    <property name="geometry">
+     <rect>
+      <x>620</x>
+      <y>30</y>
+      <width>71</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Raw data</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="bRawDataClean">
+    <property name="geometry">
+     <rect>
+      <x>920</x>
+      <y>610</y>
+      <width>101</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Clean</string>
+    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">

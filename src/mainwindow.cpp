@@ -15,6 +15,7 @@
 #include    <QTableView>
 #include    <QComboBox>
 #include    <QPushButton>
+#include    <QPlainTextEdit>
 
 //------------------------------------------------------------------------------
 //
@@ -110,6 +111,11 @@ void MainWindow::init()
     qRegisterMetaType<answer_request_t>();
 
     connect(master, &Master::sendAnswer, this, &MainWindow::onSlaveAnswer);
+
+    connect(master, &Master::sendRawData, this, &MainWindow::onRawDataReceive);
+
+    connect(ui->bRawDataClean, &QPushButton::released,
+            this, &MainWindow::onRawDataClean);
 }
 
 //------------------------------------------------------------------------------
@@ -235,6 +241,14 @@ void MainWindow::onConnectRelease()
 //------------------------------------------------------------------------------
 //
 //------------------------------------------------------------------------------
+void MainWindow::onRawDataClean()
+{
+    ui->ptRawData->clear();
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
 void MainWindow::statusPrint(QString msg)
 {
     ui->statusBar->clearMessage();
@@ -344,4 +358,23 @@ void MainWindow::onSlaveAnswer(answer_request_t answer)
         ui->tableData->setItem(i, TAB_DATA,
                                new QTableWidgetItem(QString::number(answer.data[i])));
     }
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void MainWindow::onRawDataReceive(QByteArray rawData)
+{
+    QString buff = "";
+    quint8 tmp = 0;
+
+    for (int i = 0; i < rawData.count(); i++)
+    {
+        tmp = static_cast<quint8>(rawData.at(i));
+        buff += QString("%1 ").arg(tmp, 2, 16, QLatin1Char('0'));
+    }
+
+    buff += "\n";
+
+    ui->ptRawData->appendPlainText(buff);
 }

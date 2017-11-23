@@ -59,6 +59,8 @@ private slots:
 
     void onConnectRelease();
 
+    void onRawDataClean();
+
     void statusPrint(QString msg);
 
     void changeDataTableRowsCount(int i);
@@ -70,6 +72,8 @@ private slots:
     void sendButtonRelease();
 
     void onSlaveAnswer(answer_request_t answer);
+
+    void onRawDataReceive(QByteArray rawData);
 };
 
 #endif // MAINWINDOW_H

@@ -74,6 +74,9 @@ signals:
     /// Send answer to main window
     void sendAnswer(answer_request_t answer);
 
+    /// Send raw data to main window
+    void sendRawData(QByteArray rawData);
+
 protected:
 
     /// Modbus device object

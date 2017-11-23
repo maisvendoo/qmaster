@@ -169,6 +169,8 @@ void Master::sendReadRequest(QModbusDataUnit dataUnit, quint8 id)
 
             connect(reply, &QModbusReply::errorOccurred,
                     this, &Master::errorModbus);
+
+            emit sendRawData(reply->rawResult().data());
         }
         else
             reply->deleteLater();
@@ -196,6 +198,8 @@ void Master::sendWriteRequest(QModbusDataUnit dataUnit, quint8 id)
 
              connect(reply, &QModbusReply::errorOccurred,
                      this, &Master::errorModbus);
+
+             emit sendRawData(reply->rawResult().data());
          }
          else
              reply->deleteLater();
@@ -352,7 +356,13 @@ void Master::stateChanged(QModbusDevice::State state)
 //------------------------------------------------------------------------------
 void Master::onWrited()
 {
+    QModbusReply *reply = qobject_cast<QModbusReply *>(sender());
 
+    if (reply == nullptr)
+    {
+        statusPrint("ERROR: empty reply");
+        return;
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -379,6 +389,7 @@ void Master::onRecieved()
         answer.data[i] = dataUnit.value(i);
 
     emit sendAnswer(answer);
+    emit sendRawData(reply->rawResult().data());
 }
 
 //------------------------------------------------------------------------------
