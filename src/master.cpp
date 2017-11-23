@@ -399,7 +399,6 @@ void Master::onRecieved()
 
     answer_request_t answer;
     answer.id = static_cast<quint8>(reply->serverAddress());
-    answer.address = static_cast<quint16>(dataUnit.startAddress());
     answer.count = static_cast<quint16>(dataUnit.valueCount());
 
     for (int i = 0; i < answer.count; i++)
@@ -408,6 +407,7 @@ void Master::onRecieved()
     QModbusResponse respose = reply->rawResult();
 
     answer.func = respose.functionCode();
+    answer.rawPduData = respose.data();
 
     emit sendAnswer(answer);
 }

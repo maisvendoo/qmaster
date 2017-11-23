@@ -40,7 +40,7 @@ quint8 loByte(quint16 value);
 //------------------------------------------------------------------------------
 enum
 {
-    MAX_DATA_COUNT = 252
+    MAX_DATA_SIZE = 252
 };
 
 //------------------------------------------------------------------------------
@@ -96,26 +96,7 @@ struct read_request_t : public abstract_request_t
     read_request_t() : abstract_request_t()
     {
 
-    }
-
-    QByteArray getRawData()
-    {
-        QByteArray buff;
-
-        buff.append(id);
-        buff.append(func);
-        buff.append(hiByte(address));
-        buff.append(loByte(address));
-        buff.append(hiByte(count));
-        buff.append(loByte(count));
-
-        quint16 crc = calcCRC16(buff.data(), static_cast<quint8>(buff.size()));
-
-        buff.append(hiByte(crc));
-        buff.append(loByte(crc));
-
-        return buff;
-    }
+    }    
 };
 
 #pragma pack(pop)
@@ -129,37 +110,12 @@ Q_DECLARE_METATYPE(read_request_t)
 
 struct write_request_t : public abstract_request_t
 {
-    quint16 data[MAX_DATA_COUNT];
+    quint16 data[MAX_DATA_SIZE / 2];
 
     write_request_t() : abstract_request_t()
     {
-        memset(data, 0, sizeof(quint16) * MAX_DATA_COUNT);
-    }
-
-    QByteArray getRawData()
-    {
-        QByteArray buff;
-
-        buff.append(id);
-        buff.append(func);
-        buff.append(hiByte(address));
-        buff.append(loByte(address));
-        buff.append(hiByte(count));
-        buff.append(loByte(count));
-
-        for (int i = 0; i < count; i++)
-        {
-            buff.append(hiByte(data[i]));
-            buff.append(loByte(data[i]));
-        }
-
-        quint16 crc = calcCRC16(buff.data(), static_cast<quint8>(buff.size()));
-
-        buff.append(hiByte(crc));
-        buff.append(loByte(crc));
-
-        return buff;
-    }
+        memset(data, 0, sizeof(quint16) * MAX_DATA_SIZE / 2);
+    }   
 };
 
 #pragma pack(pop)
@@ -171,11 +127,40 @@ Q_DECLARE_METATYPE(write_request_t)
 //------------------------------------------------------------------------------
 #pragma pack(push, 1)
 
-struct answer_request_t : public write_request_t
+struct answer_request_t
 {
-    answer_request_t() : write_request_t()
-    {
+    quint8      id;
+    quint8      func;
+    quint16     count;
+    quint16     data[MAX_DATA_SIZE / 2];
+    QByteArray  rawPduData;
+    quint16     crc;
 
+    answer_request_t()
+    {
+        id = 1;
+        func = 0;
+        count = 0;
+
+        memset(data, 0, sizeof(quint16) * MAX_DATA_SIZE / 2);
+        rawPduData.clear();
+        crc = 0;
+    }
+
+    QByteArray getRawData()
+    {
+        QByteArray buff;
+
+        buff.append(id);
+        buff.append(func);
+        buff += rawPduData;
+
+        crc = calcCRC16(buff.data(), static_cast<quint8>(buff.size()));
+
+        buff.append(hiByte(crc));
+        buff.append(loByte(crc));
+
+        return buff;
     }
 };
 
