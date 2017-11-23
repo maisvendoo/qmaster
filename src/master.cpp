@@ -241,8 +241,17 @@ void Master::sendRequest(abstract_request_t *request)
 {
     switch (request->func)
     {
-    // Write coils
+    // Write single coil
     case MB_FUNC_WRITE_COIL:
+        {
+            write_request_t *w_req = static_cast<write_request_t *>(request);
+            w_req->count = 1;
+            writeCoils(w_req);
+
+            break;
+        }
+
+    // Write multyple coils
     case MB_FUNC_WRITE_MULTIPLE_COILS:
         {
             write_request_t *w_req = static_cast<write_request_t *>(request);
@@ -266,6 +275,17 @@ void Master::sendRequest(abstract_request_t *request)
 
             break;
         }
+
+    // Write holding register
+    case MB_FUNC_WRITE_HOLDING_REGISTER:
+        {
+            write_request_t *w_req = static_cast<write_request_t *>(request);
+            w_req->count = 1;
+            writeHoldingRegisters(w_req);
+
+            break;
+        }
+
     // Write multiple coils
     case MB_FUNC_WRITE_MULTIPLE_REGISTERS:
         {
@@ -283,13 +303,14 @@ void Master::sendRequest(abstract_request_t *request)
             break;
         }
 
+    // Read coils
     case MB_FUNC_READ_COILS:
         {
             read_request_t *r_req = static_cast<read_request_t *>(request);
             readCoils(r_req);
 
             break;
-        }
+        }    
     }
 }
 
@@ -379,7 +400,23 @@ void Master::onWrited()
     {
         statusPrint("ERROR: empty reply");
         return;
-    }
+    }    
+
+    QModbusDataUnit dataUnit = reply->result();
+
+    answer_request_t answer;
+    answer.id = static_cast<quint8>(reply->serverAddress());
+    answer.count = static_cast<quint16>(dataUnit.valueCount());
+
+    for (int i = 0; i < answer.count; i++)
+        answer.data[i] = dataUnit.value(i);
+
+    QModbusResponse respose = reply->rawResult();
+
+    answer.func = respose.functionCode();
+    answer.rawPduData = respose.data();
+
+    emit sendAnswer(answer);
 }
 
 //------------------------------------------------------------------------------
