@@ -306,6 +306,12 @@ void MainWindow::changedFunc(QString text)
 //------------------------------------------------------------------------------
 void MainWindow::sendButtonRelease()
 {
+    if (!master->isConnected())
+    {
+        statusPrint("ERROR: Device is not connected");
+        return;
+    }
+
     quint8 func = static_cast<quint8>(mb_func[ui->cbFunc->currentText()]);
     RequestType type = getRequestType(func);
 
@@ -358,6 +364,8 @@ void MainWindow::onSlaveAnswer(answer_request_t answer)
         ui->tableData->setItem(i, TAB_DATA,
                                new QTableWidgetItem(QString::number(answer.data[i])));
     }
+
+    onRawDataReceive(answer.getRawData());
 }
 
 //------------------------------------------------------------------------------
@@ -372,9 +380,7 @@ void MainWindow::onRawDataReceive(QByteArray rawData)
     {
         tmp = static_cast<quint8>(rawData.at(i));
         buff += QString("%1 ").arg(tmp, 2, 16, QLatin1Char('0'));
-    }
-
-    //buff += "\n";
+    }    
 
     ui->ptRawData->appendPlainText(buff);
 }

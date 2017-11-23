@@ -138,6 +138,18 @@ void Master::readHoldingRegisters(read_request_t *request)
     sendReadRequest(dataUnit, request->id);
 }
 
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void Master::readCoils(read_request_t *request)
+{
+    QModbusDataUnit dataUnit(QModbusDataUnit::Coils,
+                             request->address,
+                             request->count);
+
+    sendReadRequest(dataUnit, request->id);
+}
+
 //-----------------------------------------------------------------------------
 //
 //------------------------------------------------------------------------------
@@ -238,6 +250,7 @@ void Master::sendRequest(abstract_request_t *request)
 
             break;
         }
+    // Read input registers
     case MB_FUNC_READ_INPUT_REGISTERS:
         {
             read_request_t *r_req = static_cast<read_request_t *>(request);
@@ -245,7 +258,7 @@ void Master::sendRequest(abstract_request_t *request)
 
             break;
         }
-
+    // Read discrete inputs
     case MB_FUNC_READ_DISCRETE_INPUT:
         {
             read_request_t *r_req = static_cast<read_request_t *>(request);
@@ -253,7 +266,7 @@ void Master::sendRequest(abstract_request_t *request)
 
             break;
         }
-
+    // Write multiple coils
     case MB_FUNC_WRITE_MULTIPLE_REGISTERS:
         {
             write_request_t *w_req = static_cast<write_request_t *>(request);
@@ -261,11 +274,19 @@ void Master::sendRequest(abstract_request_t *request)
 
             break;
         }
-
+    // Read holding registers
     case MB_FUNC_READ_HOLDING_REGISTERS:
         {
             read_request_t *r_req = static_cast<read_request_t *>(request);
             readHoldingRegisters(r_req);
+
+            break;
+        }
+
+    case MB_FUNC_READ_COILS:
+        {
+            read_request_t *r_req = static_cast<read_request_t *>(request);
+            readCoils(r_req);
 
             break;
         }
@@ -384,8 +405,11 @@ void Master::onRecieved()
     for (int i = 0; i < answer.count; i++)
         answer.data[i] = dataUnit.value(i);
 
+    QModbusResponse respose = reply->rawResult();
+
+    answer.func = respose.functionCode();
+
     emit sendAnswer(answer);
-    emit sendRawData(reply->rawResult().data());
 }
 
 //------------------------------------------------------------------------------
@@ -395,17 +419,17 @@ RequestType getRequestType(quint8 func)
 {
     switch (func)
     {
-    case MB_FUNC_WRITE_COIL:
-    case MB_FUNC_WRITE_HOLDING_REGISTER:
-    case MB_FUNC_WRITE_MULTIPLE_COILS:
-    case MB_FUNC_WRITE_MULTIPLE_REGISTERS:
+    case QModbusPdu::WriteSingleCoil:
+    case QModbusPdu::WriteSingleRegister:
+    case QModbusPdu::WriteMultipleCoils:
+    case QModbusPdu::WriteMultipleRegisters:
 
         return REQ_WRITE;
 
-    case MB_FUNC_READ_COILS:
-    case MB_FUNC_READ_DISCRETE_INPUT:
-    case MB_FUNC_READ_HOLDING_REGISTERS:
-    case MB_FUNC_READ_INPUT_REGISTERS:
+    case QModbusPdu::ReadCoils:
+    case QModbusPdu::ReadDiscreteInputs:
+    case QModbusPdu::ReadInputRegisters:
+    case QModbusPdu::ReadHoldingRegisters:
 
         return REQ_READ;
 

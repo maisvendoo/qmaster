@@ -93,11 +93,13 @@ protected:
 
     void readHoldingRegisters(read_request_t *request);
 
+    void readCoils(read_request_t *request);
+
     void writeHoldingRegisters(write_request_t *request);
 
     void sendReadRequest(QModbusDataUnit dataUnit, quint8 id);
 
-    void sendWriteRequest(QModbusDataUnit dataUnit, quint8 id);
+    void sendWriteRequest(QModbusDataUnit dataUnit, quint8 id);    
 
 public slots:
 

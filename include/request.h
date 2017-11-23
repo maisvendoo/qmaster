@@ -19,13 +19,28 @@
 #include    <QtGlobal>
 #include    <string.h>
 #include    <QMetaType>
+#include    <QByteArray>
+#include    <QtEndian>
+
+/*!
+ * \fn
+ * \brief CRC16 calculation
+ */
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+quint16 calcCRC16(char *buff, quint8 size);
+
+quint8 hiByte(quint16 value);
+
+quint8 loByte(quint16 value);
 
 //------------------------------------------------------------------------------
 //
 //------------------------------------------------------------------------------
 enum
 {
-    MAX_DATA_COUNT = 65536
+    MAX_DATA_COUNT = 252
 };
 
 //------------------------------------------------------------------------------
@@ -82,6 +97,25 @@ struct read_request_t : public abstract_request_t
     {
 
     }
+
+    QByteArray getRawData()
+    {
+        QByteArray buff;
+
+        buff.append(id);
+        buff.append(func);
+        buff.append(hiByte(address));
+        buff.append(loByte(address));
+        buff.append(hiByte(count));
+        buff.append(loByte(count));
+
+        quint16 crc = calcCRC16(buff.data(), static_cast<quint8>(buff.size()));
+
+        buff.append(hiByte(crc));
+        buff.append(loByte(crc));
+
+        return buff;
+    }
 };
 
 #pragma pack(pop)
@@ -101,6 +135,31 @@ struct write_request_t : public abstract_request_t
     {
         memset(data, 0, sizeof(quint16) * MAX_DATA_COUNT);
     }
+
+    QByteArray getRawData()
+    {
+        QByteArray buff;
+
+        buff.append(id);
+        buff.append(func);
+        buff.append(hiByte(address));
+        buff.append(loByte(address));
+        buff.append(hiByte(count));
+        buff.append(loByte(count));
+
+        for (int i = 0; i < count; i++)
+        {
+            buff.append(hiByte(data[i]));
+            buff.append(loByte(data[i]));
+        }
+
+        quint16 crc = calcCRC16(buff.data(), static_cast<quint8>(buff.size()));
+
+        buff.append(hiByte(crc));
+        buff.append(loByte(crc));
+
+        return buff;
+    }
 };
 
 #pragma pack(pop)
@@ -114,11 +173,9 @@ Q_DECLARE_METATYPE(write_request_t)
 
 struct answer_request_t : public write_request_t
 {
-    quint16 crc;
-
     answer_request_t() : write_request_t()
     {
-        crc = 0;
+
     }
 };
 
