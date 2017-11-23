@@ -69,6 +69,8 @@ struct abstract_request_t
 
 #pragma pack(pop)
 
+Q_DECLARE_METATYPE(abstract_request_t)
+
 //------------------------------------------------------------------------------
 //
 //------------------------------------------------------------------------------
@@ -83,6 +85,8 @@ struct read_request_t : public abstract_request_t
 };
 
 #pragma pack(pop)
+
+Q_DECLARE_METATYPE(read_request_t)
 
 //------------------------------------------------------------------------------
 //
@@ -100,6 +104,8 @@ struct write_request_t : public abstract_request_t
 };
 
 #pragma pack(pop)
+
+Q_DECLARE_METATYPE(write_request_t)
 
 //------------------------------------------------------------------------------
 //

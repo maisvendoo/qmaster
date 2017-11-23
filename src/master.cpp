@@ -245,6 +245,30 @@ void Master::sendRequest(abstract_request_t *request)
 
             break;
         }
+
+    case MB_FUNC_READ_DISCRETE_INPUT:
+        {
+            read_request_t *r_req = static_cast<read_request_t *>(request);
+            readDiscreteInputs(r_req);
+
+            break;
+        }
+
+    case MB_FUNC_WRITE_MULTIPLE_REGISTERS:
+        {
+            write_request_t *w_req = static_cast<write_request_t *>(request);
+            writeHoldingRegisters(w_req);
+
+            break;
+        }
+
+    case MB_FUNC_READ_HOLDING_REGISTERS:
+        {
+            read_request_t *r_req = static_cast<read_request_t *>(request);
+            readHoldingRegisters(r_req);
+
+            break;
+        }
     }
 }
 
