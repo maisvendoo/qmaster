@@ -66,6 +66,8 @@ private slots:
     void changeAddress(int i);
 
     void changedFunc(QString text);
+
+    void sendButtonRelease();
 };
 
 #endif // MAINWINDOW_H

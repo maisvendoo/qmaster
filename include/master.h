@@ -21,6 +21,7 @@
 #include    <QMetaType>
 
 #include    "serial-config.h"
+#include    "request.h"
 
 /*!
  * \enum
@@ -60,7 +61,7 @@ public:
     virtual ~Master();
 
     /// Master initialization
-    bool init(const serial_config_t &serial_config);
+    bool init(serial_config_t serial_config);
 
     /// Check connection state
     bool isConnected() const;
@@ -78,6 +79,8 @@ protected:
     /// Connection flag
     bool is_connected;
 
+    void writeCoils(write_request_t *request);
+
 public slots:
 
     /// Open connection throw serial port
@@ -86,13 +89,26 @@ public slots:
     /// Close connection
     void closeConnection();
 
+    /// Send request
+    void sendRequest(abstract_request_t *request);
+
 private slots:
 
     /// Error processing
     void errorModbus(QModbusDevice::Error error);
 
     /// State processing
-    void stateChanged(QModbusDevice::State state);   
+    void stateChanged(QModbusDevice::State state);
+
+    /// Data write event
+    void onWrited();
+
+
 };
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+RequestType getRequestType(quint8 func);
 
 #endif // MASTER_H

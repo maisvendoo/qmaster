@@ -14,6 +14,7 @@
 #include    <QSpinBox>
 #include    <QTableView>
 #include    <QComboBox>
+#include    <QPushButton>
 
 //------------------------------------------------------------------------------
 //
@@ -102,6 +103,9 @@ void MainWindow::init()
 
     connect(master, SIGNAL(statusPrint(QString)),
             this, SLOT(statusPrint(QString)));
+
+    // Send button initialize
+    connect(ui->bSend, &QPushButton::released, this, &MainWindow::sendButtonRelease);
 }
 
 //------------------------------------------------------------------------------
@@ -115,6 +119,7 @@ serial_config_t MainWindow::getSerialConfig()
     s_cfg.baudrate = ui->cbBaud->currentText().toInt();
     s_cfg.dataBits = ui->cbDataBits->currentText().toInt();
     s_cfg.stopBits = ui->cbStopBits->currentText().toInt();
+    s_cfg.parity = ui->cbParity->currentText();
 
     return s_cfg;
 }
@@ -275,5 +280,52 @@ void MainWindow::changedFunc(QString text)
 
         ui->tableData->setItem(j, TAB_DATA_TYPE,
                                new QTableWidgetItem(dataType));
+     }
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void MainWindow::sendButtonRelease()
+{
+    quint8 func = static_cast<quint8>(mb_func[ui->cbFunc->currentText()]);
+    RequestType type = getRequestType(func);
+
+    switch (type)
+    {
+    case REQ_READ:
+    {
+        read_request_t request;
+        request.id = static_cast<quint8>(ui->sbSlaveID->value());
+        request.func = func;
+        request.address = static_cast<quint16>(ui->sbAddress->value());
+        request.count = static_cast<quint16>(ui->sbCount->value());
+
+        master->sendRequest(&request);
+
+        break;
+    }
+
+    case REQ_WRITE:
+    {
+        write_request_t request;
+        request.id = static_cast<quint8>(ui->sbSlaveID->value());
+        request.func = func;
+        request.address = static_cast<quint16>(ui->sbAddress->value());
+        request.count = static_cast<quint16>(ui->sbCount->value());
+
+        for (int i = 0; i < request.count; i++)
+            request.data[i] = static_cast<quint16>(ui->tableData->item(i, TAB_DATA)->text().toInt());
+
+        master->sendRequest(&request);
+
+        break;
+    }
+
+    default:
+
+        statusPrint("ERROR: Unknown requst type");
+
+        break;
     }
 }

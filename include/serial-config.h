@@ -9,6 +9,7 @@
 #define SERIAL_CONFIG_H
 
 #include    <QString>
+#include    <QSerialPort>
 
 /*!
  * \struct
@@ -28,7 +29,7 @@ struct serial_config_t
     /// Stop bits count
     int         stopBits;
     /// Parity bit
-    int         parity;
+    QString     parity;
     /// Flow control
     int         flowControl;
     /// Request timeout
@@ -42,10 +43,25 @@ struct serial_config_t
         baudrate = 9600;
         dataBits = 8;
         stopBits = 1;
-        parity = 0;
+        parity = "None";
         flowControl = 0;
         timeout = 1000;
         retries = 2;
+    }
+
+    /// Get parity setting by text name
+    int getPariry()
+    {
+        if (parity == "None")
+            return QSerialPort::NoParity;
+
+        if (parity == "Odd")
+            return QSerialPort::OddParity;
+
+        if (parity == "Even")
+            return QSerialPort::EvenParity;
+
+        return QSerialPort::UnknownParity;
     }
 };
 

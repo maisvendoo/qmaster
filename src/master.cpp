@@ -46,7 +46,7 @@ Master::~Master()
 //------------------------------------------------------------------------------
 //
 //------------------------------------------------------------------------------
-bool Master::init(const serial_config_t &serial_config)
+bool Master::init(serial_config_t serial_config)
 {
     if (modbusDevice == Q_NULLPTR)
         return false;
@@ -66,7 +66,7 @@ bool Master::init(const serial_config_t &serial_config)
                                              serial_config.stopBits);
 
         modbusDevice->setConnectionParameter(QModbusDevice::SerialParityParameter,
-                                             serial_config.parity);
+                                             serial_config.getPariry());
 
         modbusDevice->setTimeout(serial_config.timeout);
         modbusDevice->setNumberOfRetries(serial_config.retries);
@@ -88,6 +88,36 @@ bool Master::isConnected() const
 //------------------------------------------------------------------------------
 //
 //------------------------------------------------------------------------------
+void Master::writeCoils(write_request_t *request)
+{
+    QModbusDataUnit dataUnit(QModbusDataUnit::Coils,
+                             request->address,
+                             request->count);
+
+   for (int i = 0; i < request->count; i++)
+       dataUnit.setValue(i, request->data[i]);
+
+   QModbusReply *reply = modbusDevice->sendWriteRequest(dataUnit, request->id);
+
+   if (reply != nullptr)
+   {
+        if (!reply->isFinished())
+        {
+            connect(reply, &QModbusReply::finished, this, &Master::onWrited);
+            connect(reply, &QModbusReply::errorOccurred, this, &Master::errorModbus);
+        }
+        else
+            reply->deleteLater();
+   }
+   else
+   {
+       statusPrint("ERROR: Master send data error");
+   }
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
 void Master::openConnection()
 {
     modbusDevice->connectDevice();
@@ -99,6 +129,25 @@ void Master::openConnection()
 void Master::closeConnection()
 {
     modbusDevice->disconnectDevice();
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void Master::sendRequest(abstract_request_t *request)
+{
+    switch (request->func)
+    {
+    // Write coils
+    case MB_FUNC_WRITE_COIL:
+    case MB_FUNC_WRITE_MULTIPLE_COILS:
+        {
+            write_request_t *w_req = static_cast<write_request_t *>(request);
+            writeCoils(w_req);
+
+            break;
+        }
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -176,3 +225,39 @@ void Master::stateChanged(QModbusDevice::State state)
     }
 }
 
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void Master::onWrited()
+{
+
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+RequestType getRequestType(quint8 func)
+{
+    switch (func)
+    {
+    case MB_FUNC_WRITE_COIL:
+    case MB_FUNC_WRITE_HOLDING_REGISTER:
+    case MB_FUNC_WRITE_MULTIPLE_COILS:
+    case MB_FUNC_WRITE_MULTIPLE_REGISTERS:
+
+        return REQ_WRITE;
+
+    case MB_FUNC_READ_COILS:
+    case MB_FUNC_READ_DISCRETE_INPUT:
+    case MB_FUNC_READ_HOLDING_REGISTERS:
+    case MB_FUNC_READ_INPUT_REGISTERS:
+
+        return REQ_READ;
+
+    default:
+
+        break;
+    }
+
+    return REQ_UNKNOWN;
+}

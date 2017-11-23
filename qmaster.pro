@@ -13,6 +13,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 INCLUDEPATH += ./include
 
-HEADERS += $$files(./include/*.h)
+HEADERS += $$files(./include/*.h) \
+    include/request.h
 SOURCES += $$files(./src/*.cpp)
 FORMS += $$files(./forms/*.ui)
