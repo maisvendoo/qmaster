@@ -13,6 +13,7 @@
 #include    <QHeaderView>
 #include    <QSpinBox>
 #include    <QTableView>
+#include    <QComboBox>
 
 //------------------------------------------------------------------------------
 //
@@ -49,18 +50,6 @@ MainWindow::~MainWindow()
 //------------------------------------------------------------------------------
 void MainWindow::init()
 {
-    // Tune output data table
-    QTableWidget *table = ui->tableData;
-    table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    addTableRow(table);
-    table->horizontalHeader()->setVisible(true);
-
-    connect(ui->sbCount, SIGNAL(valueChanged(int)),
-            this, SLOT(changeDataTableRowsCount(int)));
-
-    connect(ui->sbAddress, SIGNAL(valueChanged(int)),
-            this, SLOT(changeAddress(int)));
-
     // Get available serial ports
     QList<QSerialPortInfo> info = QSerialPortInfo::availablePorts();
 
@@ -85,6 +74,25 @@ void MainWindow::init()
     {
         ui->cbFunc->addItem(it.key());
     }
+
+    // Tune output data table
+    QTableWidget *table = ui->tableData;
+    table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    addTableRow(table);
+    table->horizontalHeader()->setVisible(true);
+
+    connect(ui->sbCount, SIGNAL(valueChanged(int)),
+            this, SLOT(changeDataTableRowsCount(int)));
+
+    connect(ui->sbAddress, SIGNAL(valueChanged(int)),
+            this, SLOT(changeAddress(int)));
+
+    connect(ui->cbFunc, SIGNAL(currentTextChanged(QString)),
+            this, SLOT(changedFunc(QString)));
+
+    QString dataType = getDataTypeName(mb_func[ui->cbFunc->currentText()]);
+
+    ui->tableData->setItem(0, TAB_DATA_TYPE, new QTableWidgetItem(dataType));
 
     // Modbus master initialization
     master = new Master();
@@ -126,6 +134,11 @@ void MainWindow::addTableRow(QTableWidget *table)
 
     table->setItem(idx, TAB_DATA,
                    new QTableWidgetItem(QString::number(0)));
+
+    QString dataType = getDataTypeName(mb_func[ui->cbFunc->currentText()]);
+
+    table->setItem(idx, TAB_DATA_TYPE,
+                   new QTableWidgetItem(dataType));
 }
 
 //------------------------------------------------------------------------------
@@ -134,6 +147,51 @@ void MainWindow::addTableRow(QTableWidget *table)
 void MainWindow::delTableRow(QTableWidget *table)
 {
     table->removeRow(table->rowCount() - 1);
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+QString MainWindow::getDataTypeName(int mb_func) const
+{
+    QString type = "Unknown";
+
+    switch (mb_func)
+    {
+    case MB_FUNC_READ_COILS:
+    case MB_FUNC_WRITE_COIL:
+    case MB_FUNC_WRITE_MULTIPLE_COILS:
+
+        type = "Coil";
+
+        break;
+
+    case MB_FUNC_READ_DISCRETE_INPUT:
+
+        type = "Discrete Input";
+
+        break;
+
+    case MB_FUNC_READ_INPUT_REGISTERS:
+
+        type = "Input Register";
+
+        break;
+
+    case MB_FUNC_READ_HOLDING_REGISTERS:
+    case MB_FUNC_WRITE_HOLDING_REGISTER:
+    case MB_FUNC_WRITE_MULTIPLE_REGISTERS:
+
+        type = "Holding Register";
+
+        break;
+
+    default:
+
+        break;
+    }
+
+    return type;
 }
 
 //------------------------------------------------------------------------------
@@ -203,5 +261,19 @@ void MainWindow::changeAddress(int i)
         item->setText(QString::number(addr));
 
         ui->tableData->setItem(j, TAB_ADDRESS,item);
+    }
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void MainWindow::changedFunc(QString text)
+{
+     for (int j = 0; j < ui->tableData->rowCount(); j++)
+    {
+        QString dataType = getDataTypeName(mb_func[text]);
+
+        ui->tableData->setItem(j, TAB_DATA_TYPE,
+                               new QTableWidgetItem(dataType));
     }
 }

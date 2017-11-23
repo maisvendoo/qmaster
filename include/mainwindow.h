@@ -47,6 +47,9 @@ private:
     /// Delete table row
     void delTableRow(QTableWidget *table);
 
+    /// Get data type name by Modbus function code
+    QString getDataTypeName(int mb_func) const;
+
     Ui::MainWindow *ui;
     Master  *master;
 
@@ -61,6 +64,8 @@ private slots:
     void changeDataTableRowsCount(int i);
 
     void changeAddress(int i);
+
+    void changedFunc(QString text);
 };
 
 #endif // MAINWINDOW_H
