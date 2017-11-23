@@ -17,6 +17,16 @@
 //------------------------------------------------------------------------------
 //
 //------------------------------------------------------------------------------
+enum
+{
+    TAB_DATA_TYPE = 0,
+    TAB_ADDRESS = 1,
+    TAB_DATA = 2
+};
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -47,6 +57,9 @@ void MainWindow::init()
 
     connect(ui->sbCount, SIGNAL(valueChanged(int)),
             this, SLOT(changeDataTableRowsCount(int)));
+
+    connect(ui->sbAddress, SIGNAL(valueChanged(int)),
+            this, SLOT(changeAddress(int)));
 
     // Get available serial ports
     QList<QSerialPortInfo> info = QSerialPortInfo::availablePorts();
@@ -107,7 +120,12 @@ void MainWindow::addTableRow(QTableWidget *table)
     table->insertRow(table->rowCount());
 
     int addr = ui->sbAddress->value() + ui->sbCount->value() - 1;
-    table->setItem(idx, 1, new QTableWidgetItem(QString::number(addr)));
+
+    table->setItem(idx, TAB_ADDRESS,
+                   new QTableWidgetItem(QString::number(addr)));
+
+    table->setItem(idx, TAB_DATA,
+                   new QTableWidgetItem(QString::number(0)));
 }
 
 //------------------------------------------------------------------------------
@@ -166,4 +184,24 @@ void MainWindow::changeDataTableRowsCount(int i)
 
     if (i < ui->tableData->rowCount())
         delTableRow(ui->tableData);
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void MainWindow::changeAddress(int i)
+{
+    int delta = i - ui->tableData->item(0, TAB_ADDRESS)->text().toInt();
+
+    for (int j = 0; j < ui->tableData->rowCount(); j++)
+    {
+        int addr = ui->tableData->item(j, TAB_ADDRESS)->text().toInt();
+        addr += delta;
+
+        QTableWidgetItem *item = new QTableWidgetItem;
+
+        item->setText(QString::number(addr));
+
+        ui->tableData->setItem(j, TAB_ADDRESS,item);
+    }
 }

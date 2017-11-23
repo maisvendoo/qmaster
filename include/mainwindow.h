@@ -59,6 +59,8 @@ private slots:
     void statusPrint(QString msg);
 
     void changeDataTableRowsCount(int i);
+
+    void changeAddress(int i);
 };
 
 #endif // MAINWINDOW_H
