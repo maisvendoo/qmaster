@@ -374,7 +374,7 @@ void MainWindow::onRawDataReceive(QByteArray rawData)
         buff += QString("%1 ").arg(tmp, 2, 16, QLatin1Char('0'));
     }
 
-    buff += "\n";
+    //buff += "\n";
 
     ui->ptRawData->appendPlainText(buff);
 }

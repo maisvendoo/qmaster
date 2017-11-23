@@ -169,8 +169,6 @@ void Master::sendReadRequest(QModbusDataUnit dataUnit, quint8 id)
 
             connect(reply, &QModbusReply::errorOccurred,
                     this, &Master::errorModbus);
-
-            emit sendRawData(reply->rawResult().data());
         }
         else
             reply->deleteLater();
@@ -197,9 +195,7 @@ void Master::sendWriteRequest(QModbusDataUnit dataUnit, quint8 id)
                      this, &Master::onWrited);
 
              connect(reply, &QModbusReply::errorOccurred,
-                     this, &Master::errorModbus);
-
-             emit sendRawData(reply->rawResult().data());
+                     this, &Master::errorModbus);             
          }
          else
              reply->deleteLater();
