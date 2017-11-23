@@ -106,6 +106,10 @@ void MainWindow::init()
 
     // Send button initialize
     connect(ui->bSend, &QPushButton::released, this, &MainWindow::sendButtonRelease);
+
+    qRegisterMetaType<answer_request_t>();
+
+    connect(master, &Master::sendAnswer, this, &MainWindow::onSlaveAnswer);
 }
 
 //------------------------------------------------------------------------------
@@ -327,5 +331,17 @@ void MainWindow::sendButtonRelease()
         statusPrint("ERROR: Unknown requst type");
 
         break;
+    }
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void MainWindow::onSlaveAnswer(answer_request_t answer)
+{
+    for (int i = 0; i < answer.count; i++)
+    {
+        ui->tableData->setItem(i, TAB_DATA,
+                               new QTableWidgetItem(QString::number(answer.data[i])));
     }
 }

@@ -18,6 +18,7 @@
 
 #include    <QtGlobal>
 #include    <string.h>
+#include    <QMetaType>
 
 //------------------------------------------------------------------------------
 //
@@ -116,5 +117,7 @@ struct answer_request_t : public write_request_t
 };
 
 #pragma pack(pop)
+
+Q_DECLARE_METATYPE(answer_request_t)
 
 #endif // REQUEST_H

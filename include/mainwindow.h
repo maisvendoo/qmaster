@@ -68,6 +68,8 @@ private slots:
     void changedFunc(QString text);
 
     void sendButtonRelease();
+
+    void onSlaveAnswer(answer_request_t answer);
 };
 
 #endif // MAINWINDOW_H

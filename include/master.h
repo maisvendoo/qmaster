@@ -71,6 +71,9 @@ signals:
     /// Print master status
     void statusPrint(QString msg);
 
+    /// Send answer to main window
+    void sendAnswer(answer_request_t answer);
+
 protected:
 
     /// Modbus device object
@@ -80,6 +83,18 @@ protected:
     bool is_connected;
 
     void writeCoils(write_request_t *request);
+
+    void readInputRegisters(read_request_t *request);
+
+    void readDiscreteInputs(read_request_t *request);
+
+    void readHoldingRegisters(read_request_t *request);
+
+    void writeHoldingRegisters(write_request_t *request);
+
+    void sendReadRequest(QModbusDataUnit dataUnit, quint8 id);
+
+    void sendWriteRequest(QModbusDataUnit dataUnit, quint8 id);
 
 public slots:
 
@@ -103,7 +118,8 @@ private slots:
     /// Data write event
     void onWrited();
 
-
+    /// Date recieve event
+    void onRecieved();
 };
 
 //------------------------------------------------------------------------------

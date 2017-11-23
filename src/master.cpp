@@ -90,29 +90,120 @@ bool Master::isConnected() const
 //------------------------------------------------------------------------------
 void Master::writeCoils(write_request_t *request)
 {
+    // Data unit creation
     QModbusDataUnit dataUnit(QModbusDataUnit::Coils,
                              request->address,
                              request->count);
 
+   // Fill all required data
    for (int i = 0; i < request->count; i++)
        dataUnit.setValue(i, request->data[i]);
 
-   QModbusReply *reply = modbusDevice->sendWriteRequest(dataUnit, request->id);
+    sendWriteRequest(dataUnit, request->id);
+}
 
-   if (reply != nullptr)
-   {
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void Master::readInputRegisters(read_request_t *request)
+{
+    QModbusDataUnit dataUnit(QModbusDataUnit::InputRegisters,
+                             request->address,
+                             request->count);
+
+    sendReadRequest(dataUnit, request->id);
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void Master::readDiscreteInputs(read_request_t *request)
+{
+    QModbusDataUnit dataUnit(QModbusDataUnit::DiscreteInputs,
+                             request->address,
+                             request->count);
+
+    sendReadRequest(dataUnit, request->id);
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void Master::readHoldingRegisters(read_request_t *request)
+{
+    QModbusDataUnit dataUnit(QModbusDataUnit::HoldingRegisters,
+                             request->address,
+                             request->count);
+
+    sendReadRequest(dataUnit, request->id);
+}
+
+//-----------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void Master::writeHoldingRegisters(write_request_t *request)
+{
+    QModbusDataUnit dataUnit(QModbusDataUnit::HoldingRegisters,
+                             request->address,
+                             request->count);
+
+    for (int i = 0; i < request->count; i++)
+        dataUnit.setValue(i, request->data[i]);
+
+    sendWriteRequest(dataUnit, request->id);
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void Master::sendReadRequest(QModbusDataUnit dataUnit, quint8 id)
+{
+    QModbusReply *reply = modbusDevice->sendReadRequest(dataUnit, id);
+
+    if (reply != nullptr)
+    {
         if (!reply->isFinished())
         {
-            connect(reply, &QModbusReply::finished, this, &Master::onWrited);
-            connect(reply, &QModbusReply::errorOccurred, this, &Master::errorModbus);
+            connect(reply, &QModbusReply::finished,
+                    this, &Master::onRecieved);
+
+            connect(reply, &QModbusReply::errorOccurred,
+                    this, &Master::errorModbus);
         }
         else
             reply->deleteLater();
-   }
-   else
-   {
-       statusPrint("ERROR: Master send data error");
-   }
+    }
+    else
+    {
+        statusPrint("ERROR: Master send data error");
+    }
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void Master::sendWriteRequest(QModbusDataUnit dataUnit, quint8 id)
+{
+    // Send reply
+    QModbusReply *reply = modbusDevice->sendWriteRequest(dataUnit, id);
+
+    if (reply != nullptr)
+    {
+         if (!reply->isFinished())
+         {
+             connect(reply, &QModbusReply::finished,
+                     this, &Master::onWrited);
+
+             connect(reply, &QModbusReply::errorOccurred,
+                     this, &Master::errorModbus);
+         }
+         else
+             reply->deleteLater();
+    }
+    else
+    {
+        statusPrint("ERROR: Master send data error");
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -144,6 +235,13 @@ void Master::sendRequest(abstract_request_t *request)
         {
             write_request_t *w_req = static_cast<write_request_t *>(request);
             writeCoils(w_req);
+
+            break;
+        }
+    case MB_FUNC_READ_INPUT_REGISTERS:
+        {
+            read_request_t *r_req = static_cast<read_request_t *>(request);
+            readInputRegisters(r_req);
 
             break;
         }
@@ -231,6 +329,32 @@ void Master::stateChanged(QModbusDevice::State state)
 void Master::onWrited()
 {
 
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void Master::onRecieved()
+{
+    QModbusReply *reply = qobject_cast<QModbusReply *>(sender());
+
+    if (reply == nullptr)
+    {
+        statusPrint("ERROR: empty reply");
+        return;
+    }
+
+    QModbusDataUnit dataUnit = reply->result();
+
+    answer_request_t answer;
+    answer.id = static_cast<quint8>(reply->serverAddress());
+    answer.address = static_cast<quint16>(dataUnit.startAddress());
+    answer.count = static_cast<quint16>(dataUnit.valueCount());
+
+    for (int i = 0; i < answer.count; i++)
+        answer.data[i] = dataUnit.value(i);
+
+    emit sendAnswer(answer);
 }
 
 //------------------------------------------------------------------------------
