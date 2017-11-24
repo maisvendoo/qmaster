@@ -4,6 +4,8 @@
 
 QMaster is crossplatform PC application for Modbus master device emulate
 
+![](https://habrastorage.org/webt/rs/b5/_y/rsb5_yvvnmixzkfh0-5hfe1hnxa.png)
+
 ##  System requirements
 
 Apllication was tested in Linux (kernel 4.13.x), Windows 7 Ultimate RC1 
