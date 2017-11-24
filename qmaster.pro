@@ -18,3 +18,4 @@ SOURCES += $$files(./src/*.cpp)
 FORMS += $$files(./forms/*.ui)
 
 RESOURCES += $$files(./resources/*.qrc)
+
