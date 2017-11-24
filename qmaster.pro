@@ -16,3 +16,5 @@ INCLUDEPATH += ./include
 HEADERS += $$files(./include/*.h)
 SOURCES += $$files(./src/*.cpp)
 FORMS += $$files(./forms/*.ui)
+
+RESOURCES += $$files(./resources/*.qrc)

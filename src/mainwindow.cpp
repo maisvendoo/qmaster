@@ -52,6 +52,10 @@ MainWindow::~MainWindow()
 //------------------------------------------------------------------------------
 void MainWindow::init()
 {
+    // Set window icon
+    QIcon icon(":/icons/img/logo.png");
+    setWindowIcon(icon);
+
     // Get available serial ports
     QList<QSerialPortInfo> info = QSerialPortInfo::availablePorts();
 

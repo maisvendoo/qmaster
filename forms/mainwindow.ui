@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>QMaster - Modbus RTU PC emulator</string>
   </property>
+  <property name="windowIcon">
+   <iconset theme=":/img/logo.png">
+    <normaloff>.</normaloff>.</iconset>
+  </property>
   <property name="autoFillBackground">
    <bool>false</bool>
   </property>
@@ -20,7 +24,7 @@
    <widget class="QComboBox" name="cbPort">
     <property name="geometry">
      <rect>
-      <x>40</x>
+      <x>10</x>
       <y>50</y>
       <width>141</width>
       <height>25</height>
@@ -30,7 +34,7 @@
    <widget class="QComboBox" name="cbBaud">
     <property name="geometry">
      <rect>
-      <x>200</x>
+      <x>160</x>
       <y>50</y>
       <width>141</width>
       <height>25</height>
@@ -100,7 +104,7 @@
    <widget class="QComboBox" name="cbDataBits">
     <property name="geometry">
      <rect>
-      <x>360</x>
+      <x>310</x>
       <y>50</y>
       <width>71</width>
       <height>25</height>
@@ -138,7 +142,7 @@
    <widget class="QComboBox" name="cbStopBits">
     <property name="geometry">
      <rect>
-      <x>440</x>
+      <x>390</x>
       <y>50</y>
       <width>71</width>
       <height>25</height>
@@ -158,7 +162,7 @@
    <widget class="QComboBox" name="cbParity">
     <property name="geometry">
      <rect>
-      <x>530</x>
+      <x>470</x>
       <y>50</y>
       <width>71</width>
       <height>25</height>
@@ -183,7 +187,7 @@
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>70</x>
+      <x>40</x>
       <y>30</y>
       <width>71</width>
       <height>17</height>
@@ -196,7 +200,7 @@
    <widget class="QLabel" name="label_2">
     <property name="geometry">
      <rect>
-      <x>240</x>
+      <x>200</x>
       <y>30</y>
       <width>71</width>
       <height>17</height>
@@ -209,9 +213,9 @@
    <widget class="QLabel" name="label_3">
     <property name="geometry">
      <rect>
-      <x>360</x>
+      <x>320</x>
       <y>30</y>
-      <width>71</width>
+      <width>51</width>
       <height>17</height>
      </rect>
     </property>
@@ -222,9 +226,9 @@
    <widget class="QLabel" name="label_4">
     <property name="geometry">
      <rect>
-      <x>450</x>
+      <x>400</x>
       <y>30</y>
-      <width>71</width>
+      <width>51</width>
       <height>17</height>
      </rect>
     </property>
@@ -235,7 +239,7 @@
    <widget class="QLabel" name="label_5">
     <property name="geometry">
      <rect>
-      <x>540</x>
+      <x>490</x>
       <y>30</y>
       <width>41</width>
       <height>17</height>
@@ -248,9 +252,9 @@
    <widget class="QPushButton" name="bConnect">
     <property name="geometry">
      <rect>
-      <x>500</x>
+      <x>450</x>
       <y>100</y>
-      <width>101</width>
+      <width>91</width>
       <height>25</height>
      </rect>
     </property>
@@ -261,7 +265,7 @@
    <widget class="QSpinBox" name="sbSlaveID">
     <property name="geometry">
      <rect>
-      <x>40</x>
+      <x>10</x>
       <y>200</y>
       <width>51</width>
       <height>26</height>
@@ -277,7 +281,7 @@
    <widget class="QLabel" name="lSlaveID">
     <property name="geometry">
      <rect>
-      <x>40</x>
+      <x>10</x>
       <y>180</y>
       <width>61</width>
       <height>17</height>
@@ -290,7 +294,7 @@
    <widget class="QComboBox" name="cbFunc">
     <property name="geometry">
      <rect>
-      <x>110</x>
+      <x>70</x>
       <y>200</y>
       <width>251</width>
       <height>25</height>
@@ -300,7 +304,7 @@
    <widget class="QLabel" name="slaveID_2">
     <property name="geometry">
      <rect>
-      <x>200</x>
+      <x>160</x>
       <y>180</y>
       <width>61</width>
       <height>17</height>
@@ -313,7 +317,7 @@
    <widget class="QSpinBox" name="sbAddress">
     <property name="geometry">
      <rect>
-      <x>380</x>
+      <x>330</x>
       <y>200</y>
       <width>51</width>
       <height>26</height>
@@ -332,7 +336,7 @@
    <widget class="QSpinBox" name="sbCount">
     <property name="geometry">
      <rect>
-      <x>440</x>
+      <x>390</x>
       <y>200</y>
       <width>51</width>
       <height>26</height>
@@ -348,7 +352,7 @@
    <widget class="QLabel" name="slaveID_3">
     <property name="geometry">
      <rect>
-      <x>380</x>
+      <x>330</x>
       <y>180</y>
       <width>61</width>
       <height>17</height>
@@ -361,7 +365,7 @@
    <widget class="QLabel" name="slaveID_4">
     <property name="geometry">
      <rect>
-      <x>440</x>
+      <x>390</x>
       <y>180</y>
       <width>41</width>
       <height>17</height>
@@ -374,9 +378,9 @@
    <widget class="QPushButton" name="bSend">
     <property name="geometry">
      <rect>
-      <x>500</x>
+      <x>450</x>
       <y>200</y>
-      <width>101</width>
+      <width>91</width>
       <height>25</height>
      </rect>
     </property>
@@ -387,10 +391,10 @@
    <widget class="QTableWidget" name="tableData">
     <property name="geometry">
      <rect>
-      <x>40</x>
+      <x>10</x>
       <y>240</y>
-      <width>451</width>
-      <height>411</height>
+      <width>531</width>
+      <height>421</height>
      </rect>
     </property>
     <property name="sizePolicy">
@@ -445,19 +449,19 @@
    <widget class="QPlainTextEdit" name="ptRawData">
     <property name="geometry">
      <rect>
-      <x>610</x>
+      <x>550</x>
       <y>90</y>
-      <width>421</width>
-      <height>561</height>
+      <width>481</width>
+      <height>571</height>
      </rect>
     </property>
    </widget>
    <widget class="QLabel" name="label_6">
     <property name="geometry">
      <rect>
-      <x>640</x>
+      <x>560</x>
       <y>70</y>
-      <width>71</width>
+      <width>51</width>
       <height>17</height>
      </rect>
     </property>
@@ -468,9 +472,9 @@
    <widget class="QPushButton" name="bRawDataClean">
     <property name="geometry">
      <rect>
-      <x>920</x>
-      <y>40</y>
-      <width>101</width>
+      <x>930</x>
+      <y>60</y>
+      <width>91</width>
       <height>25</height>
      </rect>
     </property>
