@@ -1,0 +1,27 @@
+# Contributor: Dmitry Pritykin maisvendoo@gmail.com
+
+pkgname=qmaster
+pkgver=0.1.0
+pkgrel=1
+pkgdecs="Modbus RTU master device emulator for PC"
+arch=('x86_64')
+url="https://github.com/masivendoo/qmaster.git"
+license=('GPL')
+
+source=("git+https://github.com/maisvendoo/qmaster.git")
+
+sha256sums=('SKIP')
+
+build() {
+	
+	cd $srcdir
+	mkdir build
+	cd build
+	qmake ../qmaster
+	make
+}
+
+package() {
+	cd $pkgdir
+}
+

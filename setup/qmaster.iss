@@ -17,7 +17,7 @@ DefaultDirName={pf}\{#Name}
 DefaultGroupName={#Name}
 
 OutputDir=F:\work\vr\Lastochka\soft\qmaster\bin
-OutputBaseFilename=qmaster-v0.1.0-setup.exe
+OutputBaseFilename=qmaster-v0.1.0-setup
 
 SetupIconFile=F:\work\vr\Lastochka\soft\qmaster\qmodbus-master\resources\img\logo.ico
 
@@ -33,13 +33,8 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Source: "F:\work\vr\Lastochka\soft\qmaster\bin\qmaster.exe"; DestDir: "{app}"; Flags: ignoreversion
 
 ; Прилагающиеся ресурсы
-Source: "C:\Qt\5.9.1\msvc2015_64\bin\Qt5Core.dll"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "C:\Qt\5.9.1\msvc2015_64\bin\Qt5Widgets.dll"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "C:\Qt\5.9.1\msvc2015_64\bin\Qt5SerialBus.dll"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "C:\Qt\5.9.1\msvc2015_64\bin\Qt5SerialPort.dll"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "C:\Qt\5.9.1\msvc2015_64\bin\Qt5Gui.dll"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "C:\Qt\5.9.1\msvc2015_64\bin\Qt5Network.dll"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "F:\work\vr\Lastochka\soft\qmaster\qmodbus-master\resources\img\logo.ico"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "F:\work\vr\Lastochka\soft\qmaster\bin\*.*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+
 
 [Icons]
 Name: "{group}\{#Name}"; Filename: "{app}\{#ExeName}"; IconFilename: "{app}\logo.ico"                            
