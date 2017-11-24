@@ -45,8 +45,8 @@ struct serial_config_t
         stopBits = 1;
         parity = "None";
         flowControl = 0;
-        timeout = 1000;
-        retries = 2;
+        timeout = 2;
+        retries = 1;
     }
 
     /// Get parity setting by text name
