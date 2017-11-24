@@ -21,7 +21,7 @@ For all operation systems you can made follow actions:
 $ git clone https://github.com/maisvendoo/gmaster.git
 ```
 
-2. Install Qt framework for your operation system (see more at [Qt Download page](https://www.qt.io/download-qt-for-application-development)
+2. Install Qt framework for your operation system (see more at [Qt Download page](https://www.qt.io/download-qt-for-application-development))
 3. Run Qt Creator
 4. Open new project (open file qmaster.pro)
 5. Run qmake and build progect
