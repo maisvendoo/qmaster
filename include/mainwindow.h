@@ -18,8 +18,10 @@
 
 #include    <QMainWindow>
 #include    <QTableWidget>
+#include    <QThread>
 
 #include    "master.h"
+#include    "data-sender.h"
 
 //------------------------------------------------------------------------------
 //
@@ -62,6 +64,12 @@ private:
     /// Get data type name by Modbus function code
     QString getDataTypeName(int mb_func) const;
 
+    /// Get request data from user interface
+    abstract_request_t *getRequestData();
+
+    /// Close window event handler
+    void closeEvent(QCloseEvent *event);
+
     Ui::MainWindow *ui;
     Master  *master;
 
@@ -70,6 +78,26 @@ private:
 
     /// Timer for update ports list
     QTimer *portsListUpdateTimer;
+
+    /// Current serial ports count
+    int currentSerialPorts;
+
+    /// Flag of send data theread is started
+    bool is_send_started;
+
+    /// Cyclic send flag
+    bool is_cyclic;
+
+    DataSender  dataSender;
+    QThread threadCyclicSend;
+
+    /// Flag of close window event
+    bool is_close_event;
+
+signals:
+
+    /// Send request from master to slave
+    void sendMasterRequest(abstract_request_t *request);
 
 private slots:
 
@@ -102,6 +130,18 @@ private slots:
 
     /// Update ports list
     void updatePortsList();
+
+    /// Print error message to processing console
+    void printMsg(QString msg);
+
+    /// Check/uncheck cyclic send of data
+    void checkCyclicSend(int state);
+
+    /// Actions by finish sender thread
+    void onFinishSendThread();
+
+    /// Send started flag to data sender
+    void getStartedFlag(bool *started);
 };
 
 #endif // MAINWINDOW_H

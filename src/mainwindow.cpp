@@ -25,6 +25,8 @@
 #include    <QPushButton>
 #include    <QPlainTextEdit>
 #include    <QTimer>
+#include    <QTest>
+#include    <QCheckBox>
 
 //------------------------------------------------------------------------------
 //
@@ -79,7 +81,9 @@ void MainWindow::init()
     connect(portsListUpdateTimer, &QTimer::timeout,
             this, &MainWindow::updatePortsList);
 
+    currentSerialPorts = 0;
     portsListUpdateTimer->start(UPDATE_PORT_LIST_TIMEOUT);
+
 
     // Modbus functuions list to UI
     mb_func.insert("Read Coils (0x01)", MB_FUNC_READ_COILS);
@@ -110,8 +114,8 @@ void MainWindow::init()
     connect(ui->sbAddress, SIGNAL(valueChanged(int)),
             this, SLOT(changeAddress(int)));
 
-    connect(ui->cbFunc, SIGNAL(currentTextChanged(QString)),
-            this, SLOT(changedFunc(QString)));
+    connect(ui->cbFunc, &QComboBox::currentTextChanged,
+            this, &MainWindow::changedFunc);
 
     QString dataType = getDataTypeName(mb_func[ui->cbFunc->currentText()]);
 
@@ -120,11 +124,17 @@ void MainWindow::init()
     // Modbus master initialization
     master = new Master();
 
-    connect(ui->bConnect, SIGNAL(released()),
-            this, SLOT(onConnectRelease()));
+    connect(this, &MainWindow::sendMasterRequest,
+            master, &Master::sendRequest);
 
-    connect(master, SIGNAL(statusPrint(QString)),
-            this, SLOT(statusPrint(QString)));
+    connect(ui->bConnect, &QPushButton::released,
+            this, &MainWindow::onConnectRelease);
+
+    connect(master, &Master::statusPrint,
+            this, &MainWindow::statusPrint);
+
+    connect(master, &Master::statusPrint,
+            this, &MainWindow::printMsg);
 
     // Send button initialize
     connect(ui->bSend, &QPushButton::released, this, &MainWindow::sendButtonRelease);
@@ -137,6 +147,27 @@ void MainWindow::init()
 
     connect(ui->bRawDataClean, &QPushButton::released,
             this, &MainWindow::onRawDataClean);
+
+    // Prepare work of data sender
+    is_send_started = false;
+    is_cyclic = false;
+
+    connect(ui->cCyclicSend, &QCheckBox::stateChanged,
+            this, &MainWindow::checkCyclicSend);
+
+    connect(&dataSender, &DataSender::sendMasterRequest,
+            master, &Master::sendRequest);
+
+    connect(&threadCyclicSend, &QThread::finished,
+            this, &MainWindow::onFinishSendThread);
+
+    connect(&dataSender, &DataSender::quit,
+            &threadCyclicSend, &QThread::terminate);
+
+    connect(&dataSender, &DataSender::isStarted,
+            this, &MainWindow::getStartedFlag);
+
+    is_close_event = false;
 }
 
 //------------------------------------------------------------------------------
@@ -228,6 +259,73 @@ QString MainWindow::getDataTypeName(int mb_func) const
     }
 
     return type;
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+abstract_request_t *MainWindow::getRequestData()
+{
+    // Get function code from user interface
+    quint8 func = static_cast<quint8>(mb_func[ui->cbFunc->currentText()]);
+    // Check request type (read or write data from slave)
+    RequestType type = getRequestType(func);
+
+    // Process request
+    switch (type)
+    {
+    case REQ_READ:
+    {
+        // Setup request structure
+        read_request_t *request = new read_request_t();
+        request->id = static_cast<quint8>(ui->sbSlaveID->value());
+        request->func = func;
+        request->address = static_cast<quint16>(ui->sbAddress->value());
+        request->count = static_cast<quint16>(ui->sbCount->value());
+
+        return request;
+    }
+
+    case REQ_WRITE:
+    {
+        write_request_t *request = new write_request_t();
+        request->id = static_cast<quint8>(ui->sbSlaveID->value());
+        request->func = func;
+        request->address = static_cast<quint16>(ui->sbAddress->value());
+        request->count = static_cast<quint16>(ui->sbCount->value());
+
+        // Setup data to request data field
+        for (int i = 0; i < request->count; i++)
+            request->data[i] = static_cast<quint16>(ui->tableData->item(i, TAB_DATA)->text().toInt());
+
+        return request;
+    }
+
+    default:
+
+        statusPrint("ERROR: Unknown requst type");
+
+        return nullptr;
+    }
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    // Check sender thread state
+    if (threadCyclicSend.isRunning())
+    {
+        // Stop thread
+        is_send_started = false;
+        // Close window after terminating of sender thread
+        is_close_event = true;
+        // Ignore close event
+        event->ignore();
+    }
+    else
+        event->accept();
 }
 
 //------------------------------------------------------------------------------
@@ -329,58 +427,39 @@ void MainWindow::changedFunc(QString text)
 //------------------------------------------------------------------------------
 void MainWindow::sendButtonRelease()
 {
-    // Check connection
+    // Check connection state
     if (!master->isConnected())
     {
-        statusPrint("ERROR: Device is not connected");
+        printMsg("ERROR: Device is not connected");
         return;
     }
 
-    // Get function code from user interface
-    quint8 func = static_cast<quint8>(mb_func[ui->cbFunc->currentText()]);
-    // Check request type (read or write data from slave)
-    RequestType type = getRequestType(func);
-
-    // Process request
-    switch (type)
+    // Check sender thread state
+    if (!threadCyclicSend.isRunning())
     {
-    case REQ_READ:
-    {
-        // Setup request structure
-        read_request_t request;
-        request.id = static_cast<quint8>(ui->sbSlaveID->value());
-        request.func = func;
-        request.address = static_cast<quint16>(ui->sbAddress->value());
-        request.count = static_cast<quint16>(ui->sbCount->value());
+        // Set started flag
+        is_send_started = true;
 
-        // Send request to slave
-        master->sendRequest(&request);
+        // Init data sender
+        dataSender.init(is_cyclic, ui->sbSendInterval->value(), *getRequestData());
 
-        break;
+        // Move data sender to thread
+        dataSender.moveToThread(&threadCyclicSend);
+
+        // Connect start signal with thread function
+        connect(&threadCyclicSend, &QThread::started,
+                &dataSender, &DataSender::cyclicDataSend);
+
+        // Start sender thread
+        threadCyclicSend.start();
+
+        // Mark button as stop button
+        ui->bSend->setText("Stop");
     }
-
-    case REQ_WRITE:
+    else
     {
-        write_request_t request;
-        request.id = static_cast<quint8>(ui->sbSlaveID->value());
-        request.func = func;
-        request.address = static_cast<quint16>(ui->sbAddress->value());
-        request.count = static_cast<quint16>(ui->sbCount->value());
-
-        // Setup data to request data field
-        for (int i = 0; i < request.count; i++)
-            request.data[i] = static_cast<quint16>(ui->tableData->item(i, TAB_DATA)->text().toInt());
-
-        master->sendRequest(&request);
-
-        break;
-    }
-
-    default:
-
-        statusPrint("ERROR: Unknown requst type");
-
-        break;
+        // Reset started flag
+        is_send_started = false;
     }
 }
 
@@ -405,7 +484,7 @@ void MainWindow::onSlaveAnswer(answer_request_t answer)
 //------------------------------------------------------------------------------
 void MainWindow::onRawDataReceive(QByteArray rawData)
 {
-    QString buff = "";
+    QString buff = "Received data: ";
     quint8 tmp = 0;
 
     // Convert raw data to hexadicemal form
@@ -426,12 +505,58 @@ void MainWindow::updatePortsList()
     // Get list of available ports
     QList<QSerialPortInfo> info = QSerialPortInfo::availablePorts();
 
-    // Clean ports list
-    ui->cbPort->clear();
-
-    // Update ports list
-    for (int i = 0; i < info.count(); i++)
+    if (currentSerialPorts != info.count())
     {
-        ui->cbPort->addItem(info.at(i).portName());
+        // Clean ports list
+        ui->cbPort->clear();
+
+        // Update ports list
+        for (int i = 0; i < info.count(); i++)
+        {
+            ui->cbPort->addItem(info.at(i).portName());
+        }
+
+        currentSerialPorts = info.count();
     }
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void MainWindow::printMsg(QString msg)
+{
+    ui->ptRawData->appendPlainText(msg);
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void MainWindow::checkCyclicSend(int state)
+{
+    is_cyclic = static_cast<bool>(state);
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void MainWindow::onFinishSendThread()
+{
+    // Disconnect thread function
+    disconnect(&threadCyclicSend, &QThread::started,
+               &dataSender, &DataSender::cyclicDataSend);
+
+    // Mark button as send button
+    ui->bSend->setText("Send");
+
+    // Check close flag
+    if (is_close_event)
+        QApplication::quit();
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void MainWindow::getStartedFlag(bool *started)
+{
+    *started = is_send_started;
 }
