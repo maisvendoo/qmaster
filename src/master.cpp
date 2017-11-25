@@ -48,9 +48,11 @@ Master::~Master()
 //------------------------------------------------------------------------------
 bool Master::init(serial_config_t serial_config)
 {
+    // Check modbus device is created
     if (modbusDevice == Q_NULLPTR)
         return false;
 
+    // Set serial port settings (and other connection settings)
     if (modbusDevice->state() != QModbusDevice::ConnectedState)
     {
         modbusDevice->setConnectionParameter(QModbusDevice::SerialPortNameParameter,
@@ -221,6 +223,60 @@ void Master::sendWriteRequest(QModbusDataUnit dataUnit, quint8 id)
 //------------------------------------------------------------------------------
 //
 //------------------------------------------------------------------------------
+answer_request_t Master::getSlaveAnswer(QModbusReply *reply)
+{
+    QModbusDataUnit dataUnit = reply->result();
+
+    answer_request_t answer;
+    answer.id = static_cast<quint8>(reply->serverAddress());
+    answer.count = static_cast<quint16>(dataUnit.valueCount());
+
+    for (int i = 0; i < answer.count; i++)
+        answer.data[i] = dataUnit.value(i);
+
+    QModbusResponse respose = reply->rawResult();
+
+    answer.func = respose.functionCode();
+    answer.rawPduData = respose.data();
+
+    return answer;
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+QModbusReply *Master::getSlaveReply()
+{
+    QModbusReply *reply = qobject_cast<QModbusReply *>(sender());
+
+    // Check by empty reply
+    if (reply == nullptr)
+    {
+        statusPrint("ERROR: empty reply");
+        return nullptr;
+    }
+
+    // Check by exception
+    if (reply->rawResult().isException())
+    {
+        statusPrint("ERROR: Reply exception " + modbusDevice->errorString());
+    }
+
+    // Check by invalid PDU in reply
+    if (reply->rawResult().isValid())
+    {
+        return reply;
+    }
+    else
+    {
+        statusPrint("ERROR: Invalid PDU " + modbusDevice->errorString());
+        return nullptr;
+    }
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
 void Master::openConnection()
 {
     modbusDevice->connectDevice();
@@ -242,7 +298,7 @@ void Master::sendRequest(abstract_request_t *request)
     switch (request->func)
     {
     // Write single coil
-    case MB_FUNC_WRITE_COIL:
+    case QModbusPdu::WriteSingleCoil:
         {
             write_request_t *w_req = static_cast<write_request_t *>(request);
             w_req->count = 1;
@@ -252,7 +308,7 @@ void Master::sendRequest(abstract_request_t *request)
         }
 
     // Write multyple coils
-    case MB_FUNC_WRITE_MULTIPLE_COILS:
+    case QModbusPdu::WriteMultipleCoils:
         {
             write_request_t *w_req = static_cast<write_request_t *>(request);
             writeCoils(w_req);
@@ -260,7 +316,7 @@ void Master::sendRequest(abstract_request_t *request)
             break;
         }
     // Read input registers
-    case MB_FUNC_READ_INPUT_REGISTERS:
+    case QModbusPdu::ReadInputRegisters:
         {
             read_request_t *r_req = static_cast<read_request_t *>(request);
             readInputRegisters(r_req);
@@ -268,7 +324,7 @@ void Master::sendRequest(abstract_request_t *request)
             break;
         }
     // Read discrete inputs
-    case MB_FUNC_READ_DISCRETE_INPUT:
+    case QModbusPdu::ReadDiscreteInputs:
         {
             read_request_t *r_req = static_cast<read_request_t *>(request);
             readDiscreteInputs(r_req);
@@ -277,7 +333,7 @@ void Master::sendRequest(abstract_request_t *request)
         }
 
     // Write holding register
-    case MB_FUNC_WRITE_HOLDING_REGISTER:
+    case QModbusPdu::WriteSingleRegister:
         {
             write_request_t *w_req = static_cast<write_request_t *>(request);
             w_req->count = 1;
@@ -287,7 +343,7 @@ void Master::sendRequest(abstract_request_t *request)
         }
 
     // Write multiple coils
-    case MB_FUNC_WRITE_MULTIPLE_REGISTERS:
+    case QModbusPdu::WriteMultipleRegisters:
         {
             write_request_t *w_req = static_cast<write_request_t *>(request);
             writeHoldingRegisters(w_req);
@@ -295,7 +351,7 @@ void Master::sendRequest(abstract_request_t *request)
             break;
         }
     // Read holding registers
-    case MB_FUNC_READ_HOLDING_REGISTERS:
+    case QModbusPdu::ReadHoldingRegisters:
         {
             read_request_t *r_req = static_cast<read_request_t *>(request);
             readHoldingRegisters(r_req);
@@ -304,13 +360,17 @@ void Master::sendRequest(abstract_request_t *request)
         }
 
     // Read coils
-    case MB_FUNC_READ_COILS:
+    case QModbusPdu::ReadCoils:
         {
             read_request_t *r_req = static_cast<read_request_t *>(request);
             readCoils(r_req);
 
             break;
-        }    
+        }
+
+    default:
+
+        break;
     }
 }
 
@@ -394,29 +454,10 @@ void Master::stateChanged(QModbusDevice::State state)
 //------------------------------------------------------------------------------
 void Master::onWrited()
 {
-    QModbusReply *reply = qobject_cast<QModbusReply *>(sender());
+    QModbusReply *reply = getSlaveReply();
 
-    if (reply == nullptr)
-    {
-        statusPrint("ERROR: empty reply");
-        return;
-    }    
-
-    QModbusDataUnit dataUnit = reply->result();
-
-    answer_request_t answer;
-    answer.id = static_cast<quint8>(reply->serverAddress());
-    answer.count = static_cast<quint16>(dataUnit.valueCount());
-
-    for (int i = 0; i < answer.count; i++)
-        answer.data[i] = dataUnit.value(i);
-
-    QModbusResponse respose = reply->rawResult();
-
-    answer.func = respose.functionCode();
-    answer.rawPduData = respose.data();
-
-    emit sendAnswer(answer);
+    if (reply != nullptr)
+        emit sendAnswer(getSlaveAnswer(reply));
 }
 
 //------------------------------------------------------------------------------
@@ -424,29 +465,10 @@ void Master::onWrited()
 //------------------------------------------------------------------------------
 void Master::onRecieved()
 {
-    QModbusReply *reply = qobject_cast<QModbusReply *>(sender());
+    QModbusReply *reply = getSlaveReply();
 
-    if (reply == nullptr)
-    {
-        statusPrint("ERROR: empty reply");
-        return;
-    }
-
-    QModbusDataUnit dataUnit = reply->result();
-
-    answer_request_t answer;
-    answer.id = static_cast<quint8>(reply->serverAddress());
-    answer.count = static_cast<quint16>(dataUnit.valueCount());
-
-    for (int i = 0; i < answer.count; i++)
-        answer.data[i] = dataUnit.value(i);
-
-    QModbusResponse respose = reply->rawResult();
-
-    answer.func = respose.functionCode();
-    answer.rawPduData = respose.data();
-
-    emit sendAnswer(answer);
+    if (reply != nullptr)
+        emit sendAnswer(getSlaveAnswer(reply));
 }
 
 //------------------------------------------------------------------------------

@@ -5,6 +5,14 @@
 //
 //
 //------------------------------------------------------------------------------
+/*!
+ * \file
+ * \brief Main window
+ * \copyright maisvendoo
+ * \author Dmitry Pritykin
+ * \date
+ */
+
 #include    "mainwindow.h"
 #include    "ui_mainwindow.h"
 
@@ -16,6 +24,7 @@
 #include    <QComboBox>
 #include    <QPushButton>
 #include    <QPlainTextEdit>
+#include    <QTimer>
 
 //------------------------------------------------------------------------------
 //
@@ -25,6 +34,14 @@ enum
     TAB_DATA_TYPE = 0,
     TAB_ADDRESS = 1,
     TAB_DATA = 2
+};
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+enum
+{
+    UPDATE_PORT_LIST_TIMEOUT = 100
 };
 
 //------------------------------------------------------------------------------
@@ -56,13 +73,13 @@ void MainWindow::init()
     QIcon icon(":/icons/img/logo.png");
     setWindowIcon(icon);
 
-    // Get available serial ports
-    QList<QSerialPortInfo> info = QSerialPortInfo::availablePorts();
+    // Setup timer, for update ports list
+    portsListUpdateTimer = new QTimer(this);
 
-    for (int i = 0; i < info.count(); i++)
-    {
-        ui->cbPort->addItem(info.at(i).portName());
-    }
+    connect(portsListUpdateTimer, &QTimer::timeout,
+            this, &MainWindow::updatePortsList);
+
+    portsListUpdateTimer->start(UPDATE_PORT_LIST_TIMEOUT);
 
     // Modbus functuions list to UI
     mb_func.insert("Read Coils (0x01)", MB_FUNC_READ_COILS);
@@ -276,8 +293,10 @@ void MainWindow::changeDataTableRowsCount(int i)
 //------------------------------------------------------------------------------
 void MainWindow::changeAddress(int i)
 {
+    // Calculate number of additional data table rows
     int delta = i - ui->tableData->item(0, TAB_ADDRESS)->text().toInt();
 
+    // Update all data addresses in table
     for (int j = 0; j < ui->tableData->rowCount(); j++)
     {
         int addr = ui->tableData->item(j, TAB_ADDRESS)->text().toInt();
@@ -310,25 +329,31 @@ void MainWindow::changedFunc(QString text)
 //------------------------------------------------------------------------------
 void MainWindow::sendButtonRelease()
 {
+    // Check connection
     if (!master->isConnected())
     {
         statusPrint("ERROR: Device is not connected");
         return;
     }
 
+    // Get function code from user interface
     quint8 func = static_cast<quint8>(mb_func[ui->cbFunc->currentText()]);
+    // Check request type (read or write data from slave)
     RequestType type = getRequestType(func);
 
+    // Process request
     switch (type)
     {
     case REQ_READ:
     {
+        // Setup request structure
         read_request_t request;
         request.id = static_cast<quint8>(ui->sbSlaveID->value());
         request.func = func;
         request.address = static_cast<quint16>(ui->sbAddress->value());
         request.count = static_cast<quint16>(ui->sbCount->value());
 
+        // Send request to slave
         master->sendRequest(&request);
 
         break;
@@ -342,6 +367,7 @@ void MainWindow::sendButtonRelease()
         request.address = static_cast<quint16>(ui->sbAddress->value());
         request.count = static_cast<quint16>(ui->sbCount->value());
 
+        // Setup data to request data field
         for (int i = 0; i < request.count; i++)
             request.data[i] = static_cast<quint16>(ui->tableData->item(i, TAB_DATA)->text().toInt());
 
@@ -363,12 +389,14 @@ void MainWindow::sendButtonRelease()
 //------------------------------------------------------------------------------
 void MainWindow::onSlaveAnswer(answer_request_t answer)
 {
+    // Put received data into data table
     for (int i = 0; i < answer.count; i++)
     {
         ui->tableData->setItem(i, TAB_DATA,
                                new QTableWidgetItem(QString::number(answer.data[i])));
     }
 
+    // Put raw data into raw data log
     onRawDataReceive(answer.getRawData());
 }
 
@@ -380,6 +408,7 @@ void MainWindow::onRawDataReceive(QByteArray rawData)
     QString buff = "";
     quint8 tmp = 0;
 
+    // Convert raw data to hexadicemal form
     for (int i = 0; i < rawData.count(); i++)
     {
         tmp = static_cast<quint8>(rawData.at(i));
@@ -387,4 +416,22 @@ void MainWindow::onRawDataReceive(QByteArray rawData)
     }    
 
     ui->ptRawData->appendPlainText(buff);
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void MainWindow::updatePortsList()
+{
+    // Get list of available ports
+    QList<QSerialPortInfo> info = QSerialPortInfo::availablePorts();
+
+    // Clean ports list
+    ui->cbPort->clear();
+
+    // Update ports list
+    for (int i = 0; i < info.count(); i++)
+    {
+        ui->cbPort->addItem(info.at(i).portName());
+    }
 }

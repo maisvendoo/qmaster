@@ -13,16 +13,10 @@
  * \date 22/11/2017
  */
 
-#include    "main.h"
+#ifndef MAIN_H
+#define MAIN_H
 
-//------------------------------------------------------------------------------
-//
-//------------------------------------------------------------------------------
-int main(int argc, char *argv[])
-{
-    QApplication a(argc, argv);
-    MainWindow w;
-    w.show();
+#include "mainwindow.h"
+#include <QApplication>
 
-    return a.exec();
-}
+#endif // MAIN_H

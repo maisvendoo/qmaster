@@ -99,7 +99,11 @@ protected:
 
     void sendReadRequest(QModbusDataUnit dataUnit, quint8 id);
 
-    void sendWriteRequest(QModbusDataUnit dataUnit, quint8 id);    
+    void sendWriteRequest(QModbusDataUnit dataUnit, quint8 id);
+
+    answer_request_t getSlaveAnswer(QModbusReply *reply);
+
+    QModbusReply *getSlaveReply();
 
 public slots:
 
