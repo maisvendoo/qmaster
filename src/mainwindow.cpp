@@ -25,7 +25,6 @@
 #include    <QPushButton>
 #include    <QPlainTextEdit>
 #include    <QTimer>
-#include    <QTest>
 #include    <QCheckBox>
 
 //------------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 #define Name        "QMaster"
-#define Version       "0.1.0"
+#define Version       "0.2.0"
 #define Publisher     "maisvendoo"
 #define URL           "https://github.com/maisvendoo/qmaster.git"
 #define ExeName       "qmaster.exe"
@@ -20,7 +20,7 @@ DefaultDirName={pf}\{#Name}
 DefaultGroupName={#Name}
 
 OutputDir=..\..\bin-setup
-OutputBaseFilename=qmaster-v0.1.0-setup
+OutputBaseFilename=qmaster-v{#Version}-setup
 
 SetupIconFile={#ResourceDir}\img\logo.ico
 

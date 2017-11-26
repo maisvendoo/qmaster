@@ -16,7 +16,6 @@
 #include    "data-sender.h"
 
 #include    <QThread>
-#include    <QTest>
 
 //------------------------------------------------------------------------------
 //
@@ -58,7 +57,7 @@ void DataSender::cyclicDataSend()
 
         // Sleeping thread, if requed cyclical data send
         if (is_cyclic)
-            QTest::qSleep(delay);
+            QThread::msleep(delay);
 
         // Get started flag from main window
         emit isStarted(&is_send_started);
