@@ -64,6 +64,7 @@ $ ./qmaster
 
 *Attention:* If you use Arch Linux, you can install [QMaster from AUR](https://aur.archlinux.org/packages/qmaster/)
 
+
 ```
 $ yaourt -S qmaster
 ```
