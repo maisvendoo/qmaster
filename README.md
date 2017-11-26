@@ -29,6 +29,7 @@ Apllication was tested in Linux (kernel 4.13.x), Windows 7 Ultimate RC1
 ```
 $ mkdir qmaster
 $ cd qmaster
+```
 
 2. Get sources by
 
@@ -54,7 +55,7 @@ $ make
 
 ```
 $ cd ../bin
-
+```
 
 6. Run
 
