@@ -1,8 +1,11 @@
-#define Name      "QMaster"
-#define Version   "0.1.0"
-#define Publisher "maisvendoo"
-#define URL       "https://github.com/maisvendoo/qmaster.git"
-#define ExeName   "qmaster.exe"
+#define Name        "QMaster"
+#define Version       "0.2.0"
+#define Publisher     "maisvendoo"
+#define URL           "https://github.com/maisvendoo/qmaster.git"
+#define ExeName       "qmaster.exe"
+#define BinDir        "..\..\bin"
+#define SrcDir        "..\"
+#define ResourceDir   "..\resources\"
 
 [Setup]
 AppId={{40786C42-8EC8-445D-98DB-C6BBCC31111B}}
@@ -16,10 +19,10 @@ AppUpdatesURL={#URL}
 DefaultDirName={pf}\{#Name}
 DefaultGroupName={#Name}
 
-OutputDir=F:\work\vr\Lastochka\soft\qmaster\bin
-OutputBaseFilename=qmaster-v0.1.0-setup
+OutputDir=..\..\bin-setup
+OutputBaseFilename=qmaster-v{#Version}-setup
 
-SetupIconFile=F:\work\vr\Lastochka\soft\qmaster\qmodbus-master\resources\img\logo.ico
+SetupIconFile={#ResourceDir}\img\logo.ico
 
 Compression=lzma
 SolidCompression=yes
@@ -30,10 +33,11 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 [Files]
 
 ; Исполняемый файл
-Source: "F:\work\vr\Lastochka\soft\qmaster\bin\qmaster.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#BinDir}\qmaster.exe"; DestDir: "{app}"; Flags: ignoreversion
 
 ; Прилагающиеся ресурсы
-Source: "F:\work\vr\Lastochka\soft\qmaster\bin\*.*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#BinDir}\*.*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#ResourceDir}\img\logo.ico"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 
 [Icons]

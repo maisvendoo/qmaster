@@ -4,7 +4,7 @@
 
 QMaster is crossplatform PC application for Modbus master device emulate
 
-![](https://habrastorage.org/webt/rs/b5/_y/rsb5_yvvnmixzkfh0-5hfe1hnxa.png)
+![](https://habrastorage.org/webt/cu/pi/me/cupimefoxztpq0dgortu4fuo-ka.png)
 
 ##  System requirements
 
@@ -15,16 +15,55 @@ Apllication was tested in Linux (kernel 4.13.x), Windows 7 Ultimate RC1
 
 ## Installation
 
-For all operation systems you can made follow actions:
+### Windows
 
-1. Get QMaster by this repository
+1. Load lestest release from [release page](https://github.com/maisvendoo/qmaster/releases)
+2. Run qmaster-vX.Y.Z-setup.exe file to setup QMaster to your system
+
+### Linux
+
+1. Create directory
 
 ```
-$ git clone https://github.com/maisvendoo/gmaster.git
+$ mkdir qmaster
+$ cd qmaster
 ```
 
-2. Install Qt framework for your operation system (see more at [Qt Download page](https://www.qt.io/download-qt-for-application-development))
-3. Run Qt Creator
-4. Open new project (open file qmaster.pro)
-5. Run qmake and build progect
- 
+2. Get sources by
+
+```
+$ git clone https://github.com/maisvendoo/qmaster.git
+```
+
+3. Create directory for building
+
+```
+$ mkdir build
+$ cd build
+```
+
+4. Execute commands
+
+```
+$ qmake ../qmaster
+$ make
+```
+
+5. Go to directory
+
+```
+$ cd ../bin
+```
+
+6. Run
+
+```
+$ ./qmaster
+```
+
+**Attention:** If you use Arch Linux, you can install [QMaster from AUR](https://aur.archlinux.org/packages/qmaster/)
+
+```
+$ yaourt -S qmaster
+```
+
