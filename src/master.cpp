@@ -231,13 +231,15 @@ answer_request_t Master::getSlaveAnswer(QModbusReply *reply)
     answer.id = static_cast<quint8>(reply->serverAddress());
     answer.count = static_cast<quint16>(dataUnit.valueCount());
 
-    for (int i = 0; i < answer.count; i++)
-        answer.data[i] = dataUnit.value(i);
-
     QModbusResponse respose = reply->rawResult();
 
     answer.func = respose.functionCode();
     answer.rawPduData = respose.data();
+
+    for (int i = 0; i < answer.count; i++)
+    {
+       answer.data[i] = dataUnit.value(i);
+    }
 
     return answer;
 }

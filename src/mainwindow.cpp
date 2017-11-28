@@ -467,11 +467,14 @@ void MainWindow::sendButtonRelease()
 //------------------------------------------------------------------------------
 void MainWindow::onSlaveAnswer(answer_request_t answer)
 {
-    // Put received data into data table
-    for (int i = 0; i < answer.count; i++)
+    if (getRequestType(answer.func) == REQ_READ)
     {
-        ui->tableData->setItem(i, TAB_DATA,
-                               new QTableWidgetItem(QString::number(answer.data[i])));
+        // Put received data into data table
+        for (int i = 0; i < answer.count; i++)
+        {
+            ui->tableData->setItem(i, TAB_DATA,
+                                   new QTableWidgetItem(QString::number(answer.data[i])));
+        }
     }
 
     // Put raw data into raw data log
@@ -549,7 +552,10 @@ void MainWindow::onFinishSendThread()
 
     // Check close flag
     if (is_close_event)
+    {
+        master->closeConnection();
         QApplication::quit();
+    }
 }
 
 //------------------------------------------------------------------------------
