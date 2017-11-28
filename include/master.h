@@ -137,3 +137,4 @@ private slots:
 RequestType getRequestType(quint8 func);
 
 #endif // MASTER_H
+

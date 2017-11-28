@@ -73,12 +73,15 @@ struct abstract_request_t
     quint16     address;
     /// Data count
     quint16     count;
+    /// Data
+    quint16 data[MAX_DATA_SIZE / 2];
 
     abstract_request_t()
     {
         id = 1;
         func = 0x00;
         count = 0;
+        memset(data, 0, sizeof(quint16) * MAX_DATA_SIZE / 2);
     }
 };
 
@@ -110,11 +113,9 @@ Q_DECLARE_METATYPE(read_request_t)
 
 struct write_request_t : public abstract_request_t
 {
-    quint16 data[MAX_DATA_SIZE / 2];
-
     write_request_t() : abstract_request_t()
     {
-        memset(data, 0, sizeof(quint16) * MAX_DATA_SIZE / 2);
+
     }   
 };
 

@@ -565,3 +565,4 @@ void MainWindow::getStartedFlag(bool *started)
 {
     *started = is_send_started;
 }
+

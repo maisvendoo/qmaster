@@ -501,3 +501,4 @@ RequestType getRequestType(quint8 func)
 
     return REQ_UNKNOWN;
 }
+

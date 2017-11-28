@@ -20,8 +20,6 @@ Apllication was tested in Linux (kernel 4.13.x), Windows 7 Ultimate RC1
 1. Load lestest release from [release page](https://github.com/maisvendoo/qmaster/releases)
 2. Run qmaster-vX.Y.Z-setup.exe file to setup QMaster to your system
 
-**Attantion:** If you have error such as "could't find msvcp140.dll...", you must install [MS Visual C++ Redistributable package](https://www.microsoft.com/en-us/download/details.aspx?id=53587), because cuurent QMaster version builded with dynamic linking.
-
 ### Linux
 
 1. Create directory
