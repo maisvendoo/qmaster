@@ -154,17 +154,8 @@ void MainWindow::init()
     connect(ui->cCyclicSend, &QCheckBox::stateChanged,
             this, &MainWindow::checkCyclicSend);
 
-    connect(&dataSender, &DataSender::sendMasterRequest,
-            master, &Master::sendRequest);
-
-    connect(&threadCyclicSend, &QThread::finished,
-            this, &MainWindow::onFinishSendThread);
-
-    connect(&dataSender, &DataSender::quit,
-            &threadCyclicSend, &QThread::terminate);
-
-    connect(&dataSender, &DataSender::isStarted,
-            this, &MainWindow::getStartedFlag);
+    connect(&sendRequestTimer, &QTimer::timeout,
+            this, &MainWindow::slotCyclicRequestSend);
 
     is_close_event = false;
 }
@@ -313,18 +304,7 @@ abstract_request_t *MainWindow::getRequestData()
 //------------------------------------------------------------------------------
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    // Check sender thread state
-    if (threadCyclicSend.isRunning())
-    {
-        // Stop thread
-        is_send_started = false;
-        // Close window after terminating of sender thread
-        is_close_event = true;
-        // Ignore close event
-        event->ignore();
-    }
-    else
-        event->accept();
+    event->accept();
 }
 
 //------------------------------------------------------------------------------
@@ -433,32 +413,25 @@ void MainWindow::sendButtonRelease()
         return;
     }
 
-    // Check sender thread state
-    if (!threadCyclicSend.isRunning())
+    if (!is_cyclic)
     {
-        // Set started flag
-        is_send_started = true;
-
-        // Init data sender
-        dataSender.init(is_cyclic, ui->sbSendInterval->value(), *getRequestData());
-
-        // Move data sender to thread
-        dataSender.moveToThread(&threadCyclicSend);
-
-        // Connect start signal with thread function
-        connect(&threadCyclicSend, &QThread::started,
-                &dataSender, &DataSender::cyclicDataSend);
-
-        // Start sender thread
-        threadCyclicSend.start();
-
-        // Mark button as stop button
-        ui->bSend->setText("Stop");
+        emit sendMasterRequest(getRequestData());
     }
     else
     {
-        // Reset started flag
-        is_send_started = false;
+        if (!sendRequestTimer.isActive())
+        {
+            sendRequestTimer.setInterval(ui->sbSendInterval->value());
+            sendRequestTimer.start();
+            ui->bSend->setText("Stop");
+            ui->bConnect->setEnabled(false);
+        }
+        else
+        {
+            sendRequestTimer.stop();
+            ui->bSend->setText("Send");
+            ui->bConnect->setEnabled(true);
+        }
     }
 }
 
@@ -541,28 +514,15 @@ void MainWindow::checkCyclicSend(int state)
 //------------------------------------------------------------------------------
 //
 //------------------------------------------------------------------------------
-void MainWindow::onFinishSendThread()
-{
-    // Disconnect thread function
-    disconnect(&threadCyclicSend, &QThread::started,
-               &dataSender, &DataSender::cyclicDataSend);
-
-    // Mark button as send button
-    ui->bSend->setText("Send");
-
-    // Check close flag
-    if (is_close_event)
-    {
-        master->closeConnection();
-        QApplication::quit();
-    }
-}
-
-//------------------------------------------------------------------------------
-//
-//------------------------------------------------------------------------------
 void MainWindow::getStartedFlag(bool *started)
 {
     *started = is_send_started;
 }
 
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void MainWindow::slotCyclicRequestSend()
+{
+    emit sendMasterRequest(getRequestData());
+}

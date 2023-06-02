@@ -18,10 +18,9 @@
 
 #include    <QMainWindow>
 #include    <QTableWidget>
-#include    <QThread>
+#include    <QTimer>
 
 #include    "master.h"
-#include    "data-sender.h"
 
 //------------------------------------------------------------------------------
 //
@@ -86,13 +85,12 @@ private:
     bool is_send_started;
 
     /// Cyclic send flag
-    bool is_cyclic;
-
-    DataSender  dataSender;
-    QThread threadCyclicSend;
+    bool is_cyclic;    
 
     /// Flag of close window event
     bool is_close_event;
+
+    QTimer sendRequestTimer;
 
 signals:
 
@@ -137,11 +135,11 @@ private slots:
     /// Check/uncheck cyclic send of data
     void checkCyclicSend(int state);
 
-    /// Actions by finish sender thread
-    void onFinishSendThread();
-
     /// Send started flag to data sender
     void getStartedFlag(bool *started);
+
+    /// Cyclic send request by reference time interval
+    void slotCyclicRequestSend();
 };
 
 #endif // MAINWINDOW_H
