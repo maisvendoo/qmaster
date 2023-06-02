@@ -1,5 +1,5 @@
 #define Name        "QMaster"
-#define Version       "0.2.4"
+#define Version       "1.0.0"
 #define Publisher     "maisvendoo"
 #define URL           "https://github.com/maisvendoo/qmaster.git"
 #define ExeName       "qmaster.exe"
